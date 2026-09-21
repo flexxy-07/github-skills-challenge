@@ -129,3 +129,23 @@ env PYTHONPATH=$PWD:$PWD/src python3 -m pytest
 
 The expected test result is 8 passed. The workflow result should show 10
 records processed, 2 anomalies detected, and 2 events consumed.
+
+Validation result
+
+The provided validation was run with:
+
+env PYTHONPATH=$PWD:$PWD/src python3 -m pytest
+
+The result was 8 passed. The tests confirmed that a normal record is not
+flagged, an anomalous record is detected, an anomaly event is generated and
+published by the producer, and a consumer can receive an event from its topic.
+
+The complete workflow was also run with:
+
+PYTHONPATH=src python3 src/aiops_pipeline.py
+
+The final output confirmed that the operational data was processed, with 10
+records processed and 2 anomalies detected. Both anomaly events moved through
+the producer and shared topic, the consumer received 2 events, and the final
+AIOps workflow completed successfully. The detected issues were the payment
+service timeout at 10:05 and the database connection timeout at 10:06.
