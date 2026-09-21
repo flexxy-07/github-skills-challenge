@@ -81,3 +81,32 @@ three numeric metrics, so it identifies the high response times and the high
 CPU and memory values. It does not currently use the ERROR log level as a
 detection reason, even though the log entries are clearly relevant to the
 operational diagnosis.
+
+## Detection report
+
+The unchanged pipeline processed all ten observations and internally detected
+two anomalies. The first was at 2026-09-20T10:05:00. Its response time was 610
+milliseconds, which crossed the 500 millisecond threshold. CPU was 75 percent
+and memory was 70 percent, so neither resource metric crossed its threshold.
+The record contained an ERROR log with the message Payment service timeout, but
+the detector did not include that log as a reason because it checks for WARNING
+rather than ERROR.
+
+The second anomaly was at 2026-09-20T10:06:00. Its response time was 640
+milliseconds, CPU was 94 percent, and memory was 91 percent. These values
+crossed all three configured thresholds. The record also contained an ERROR log
+with the message Database connection timeout, but this log event was missed by
+the detector for the same reason.
+
+The records from 10:00 to 10:04 and 10:07 to 10:09 were treated as normal and
+were not flagged. No normal event was incorrectly flagged in this data set. Both
+expected anomalous observations were detected through their metrics, but both
+relevant ERROR log events were missed. The final pipeline output reported zero
+events consumed because the producer uses the service-events topic while the
+consumer listens to the separate anomaly-events topic, so the printed report did
+not display the detected event details.
+
+One limitation is that the detector relies on fixed thresholds and does not
+learn what normal behaviour looks like for this service. A possible improvement
+would be to build a baseline from recent healthy observations and combine that
+with explicit checks for ERROR logs and timeout messages.
