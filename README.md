@@ -110,3 +110,29 @@ One limitation is that the detector relies on fixed thresholds and does not
 learn what normal behaviour looks like for this service. A possible improvement
 would be to build a baseline from recent healthy observations and combine that
 with explicit checks for ERROR logs and timeout messages.
+
+## Event flow verification
+
+The provided workflow was executed without changing the event components. It
+processed 10 records and identified 2 anomaly events, at 10:05 and 10:06.
+
+The detector creates an event when a record crosses a configured metric
+threshold. The event contains the timestamp, service, type, reasons, and source
+record. The producer receives each event and returns True after publishing it.
+The topic stores the published messages in memory. In the execution, both
+producer.publish calls returned True and the service-events topic contained 2
+messages.
+
+The consumer is intended to read those messages and pass them to the downstream
+AIOps pipeline. In the supplied workflow, however, the consumer was connected
+to the separate anomaly-events topic. It therefore received 0 messages, and the
+printed workflow result reported Events consumed: 0. The events did not reach
+the downstream processing step, so the complete event flow could not be
+verified as successful with the code as provided.
+
+The component roles are: the event is the anomaly message created by detection;
+the producer publishes that message; the topic stores and makes messages
+available; the consumer reads messages from its topic; and the downstream AIOps
+component is the pipeline that reports consumed events. The producer-to-topic
+stage was verified, but the topic-to-consumer and downstream stages were not
+completed because the two sides use different topic names.
